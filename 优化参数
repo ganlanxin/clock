@@ -1,0 +1,131 @@
+v0Per=0.026;v0Cry=0.270;v0Chrono=0.33;v0Rev1=0.040;v0Rev2=0.040;v0Ror=0.178;v0B=0.405;v0Jf=0.2;%PER,CRY,CHRONO,REV-ERB2,ROR,BMAL1,REV-ERB,JUN-FOS表达的基本转录率.
+
+vsPer=1.144;vsCry=0.072;vsChrono=0.23;vs1Rev1=0.901;vsRev2=0.901;vsRor=0.052;%BMAL1激活的PER,CRY,CHRONO,REV-ERB1,REV-ERB2和ROR转录的最大速率.
+vs2Rev1=0.901;%JUN-FOS激活的REV-ERB1转录的最大速率.
+vsB=0.417;%ROR激活的BMAL1转录的最大速率.
+
+naB=2;%BMAL1激活的PER,CRY,CHRONO,REV-ERB1,REV-ERB2和ROR转录的Hill系数.
+naJF=2;%JUN-FOS激活导致REV-ERB1转录的Hill系数
+naRo=2;%ROR激活导致BMAL1转录的Hill系数.
+niPC=4;%PER-CPRY复合体抑制的PER, CRY, CHRONO, REV-ERB1， REV-ERB2和ROR转录的Hill系数.
+niCh=4;%CHRONO抑制的PER, CRY, CHRONO, REV-ERB和ROR转录的Hill系数.
+niRe=3;%由于REV-ERB1和REV-ERB2的抑制，BMAL1转录的Hill系数.
+
+KAPer=1.150;KACry=0.291;KAChrono=1.5;KARev2=4.775;KARor=2.483;%BMAL1激活的PER,CRY,CHRONO,REV-ERB2和ROR转录的Michaelis常数.
+KAB=1.468;%ROR激活导致BMAL1转录的Michaelis常数.
+KA1Rev1=4.775;%由于BMAL1激活,REV-ERB1转录的Michaelis常数.
+KA2Rev1=4.775;%由于JUN-FOS激活,REV-ERB1转录的Michaelis常数.
+
+R1Per=0.960;R1Cry=0.675;R1Chrono=0.975;R1Rev1=1.506;R1Rev2=1.506;R1Ror=0.970;%由于PER-CRY复合体的抑制,PER,CRY,CHRONO,REV-ERB1，REV-ERB2和ROR转录的Michaelis常数
+R2Per=0.960;R2Cry=0.675;R2Chrono=0.975;R2Rev1=0.251;R2Rev2=0.251;R2Ror=0.162;%由于CHRONO的抑制,PER,CRY,CHRONO,REV-ERB1,REV-ERB2和ROR转录的Michaelis常数.
+
+RB1=0.0159;%由于REV-ERB1的抑制，BMAL1转录的Michaelis常数.
+RB2=0.0159;%由于REV-ERB2的抑制，BMAL1转录的Michaelis常数.
+
+vdPer=0.302;vdCry=0.285;vdChrono=0.385;vdRev1=0.361;vdRev2=0.361;vdRor=0.309;vdB=0.483;vdJf=0.5;%PER,CRY,CHRONO,REV-ERB1,REV-ERB2,ROR,BMAL1,JUN-FOS mRNA的最大降解速率.
+KdPer=0.047;KdCry=0.371;KdChrono=0.2;KdRev1=0.691;KdRev2=0.691;KdRor=3.659;KdB=0.135;KdJf=0.2;%PER,CRY,CHRONO,REV-ERB1,REV-ERB2,ROR,BMAL1,JUN-FOS的mRNA降解的米氏常数.
+kdn=0.077;%非特异性降解速率常数.
+
+ksPER=1.009;ksCRY=1.407;ksCHRONO=0.3;ksBMAL1=1.073;ksJF=0.6;ksREV1=0.167;ksREV2=0.167;ksROR=0.320;%PER,CRY,CHRONO, BMAL1,JUN-FOS,REV-ERB1,REV-ERB2和ROR蛋白的合成速率常数.
+kaPC=0.006;kdPC=0.006;%胞质PER-CRY复合物的缔合速率常数和解离速率常数；
+
+vdPER=1.285;vdCRY=0.265;vdCHRONO=0.2;vdBMAL1=0.104;vdJF=0.4;vdREV1=0.387;vdREV2=0.387;vdROR=0.179;%PER,CRY,CHRONO, BMAL1,JUN-FOS,REV-ERB1,REV-ERB2和ROR蛋白的最大降解速率.
+KdPER=0.478;KdCRY=1.247;KdCHRONO=0.8;KdBMAL1=0.135;KdJF=0.3;KdREV1=0.796;KdREV2=0.796;KdROR=4.893;%PER,CRY,CHRONO, BMAL1,JUN-FOS,REV-ERB1,REV-ERB2和ROR蛋白的降解米氏常数.
+
+vdPC=0.069;%PER-CRY复合物的最大降解率.
+KdPC=0.575;%PER-CRY复合物降解的Michaelis常数.
+
+x=[v0Per v0Cry v0Chrono v0Rev1 v0Rev2 v0Ror v0B  v0Jf...
+   vsPer vsCry vsChrono vs1Rev1 vsRev2 vsRor ...
+   vs2Rev1 vsB ...
+   naB naJF naRo niPC niCh niRe ...
+   KAPer KACry KAChrono KARev2 KARor...
+   KAB...
+   KA1Rev1 KA2Rev1...
+   R1Per R1Cry R1Chrono R1Rev1 R1Rev2 R1Ror...
+   R2Per R2Cry R2Chrono R2Rev1 R2Rev2 R2Ror...
+   RB1 RB2...
+   vdPer vdCry vdChrono vdRev1 vdRev2 vdRor vdB vdJf...
+   KdPer KdCry KdChrono KdRev1 KdRev2 KdRor KdB KdJf...
+   kdn...
+   ksPER ksCRY ksCHRONO ksBMAL1 ksJF ksREV1 ksREV2 ksROR...
+   kaPC kdPC...
+   vdPER vdCRY vdCHRONO vdBMAL1 vdJF vdREV1 vdREV2 vdROR...
+   KdPER KdCRY KdCHRONO KdBMAL1 KdJF KdREV1 KdREV2 KdROR...
+   vdPC KdPC];%参数初值
+n=length(x);%样本量
+xmean1 = randn;%目标变量起始点,均值为0,方差为1的随机标量
+t1=1/sqrt(2*sqrt(n));t2=1/sqrt(2*n);b=0.0873;%表示控制步长的常数
+T=zeros(n,1);
+a=zeros(n*(n-1)/2,1);
+a1=zeros(n*(n-1)/2,1);
+X1=zeros(n*(n-1)/2,1);
+X2=zeros(n,1);
+sigma=zeros(n,1);
+sigma1=zeros(n,1);
+xmean=zeros(n,1);
+D=eye(n,n); %给各个变量赋予存储空间
+
+
+%Mutation 
+for j=1:n*(n-1)/2
+    X1(j)=randn;%标准正态分布随机变量
+    a1(j)=pi/4;%旋转角度
+    a(j)=a1(j)+b*X1(j);%突变后的旋转角度
+    if abs(a(j)) > 2*pi
+        a(j)=a(j)-2*pi*sign(a(j));%让a的范围在[-pi,pi]之内
+    end
+end
+
+for i=1:n
+    X2(i)=randn;%标准正态分布随机变量
+    sigma(i)=3;% 标准差（步长）
+    sigma1(i)=sigma(i)*exp(t2*xmean1+t1*X2(i));%突变后的标准差
+    D=diag(sigma1);%步长矩阵，对角线元素是各分量的标准差
+end
+
+for k=1:88
+    D(k,k+1:89)=a((178-k)*(k-1)/2+1:((178-k)*(k-1)/2)+1+(88-k));%用a把步长矩阵的上三角部分补上
+end
+
+C=D;
+C=triu(C)+triu(C,1)';%协方差矩阵
+Q1=eig(C);
+R=chol(C);
+T=repmat(x,100,1) + rand(100,n)*R;
+T=T';
+
+function REV=CLOCK(t,BM2)
+for s=1:100
+   REV=[27/23.7*(T(1,s)+(T(9,s).*(BM2(13).^T(17,s)))./((T(23,s).^T(17,s)).*(1+(BM2(11)./T(31,s)).^T(20,s)+(BM2(12)./T(37,s)).^T(21,s))+(BM2(13).^T(17,s)))-(T(45,s).*BM2(1))./(T(53,s)+BM2(1))-T(61,s).*BM2(1));
+    27/23.7*(T(2,s)+(T(10,s).*(BM2(13).^T(17,s)))./((T(24,s).^T(17,s)).*(1+(BM2(11)./T(32,s)).^T(20,s)+(BM2(12)./T(38,s)).^T(21,s))+(BM2(13).^T(17,s)))-(T(46,s).*BM2(2))./(T(54,s)+BM2(2))-T(61,s).*BM2(2));
+    27/23.7*(T(3,s)+(T(11,s).*(BM2(13).^T(17,s)))./((T(25,s).^T(17,s)).*(1+(BM2(11)./T(33,s)).^T(20,s)+(BM2(12)./T(39,s)).^T(21,s))+(BM2(13).^T(17,s)))-(T(47,s).*BM2(3))./(T(55,s)+BM2(3))-T(61,s).*BM2(3));
+    27/23.7*(T(5,s)+(T(13,s).*(BM2(13).^T(17,s)))./((T(26,s).^T(17,s)).*(1+(BM2(11)./T(35,s)).^T(20,s)+(BM2(12)./T(41,s)).^T(21,s))+(BM2(13).^T(17,s)))-(T(49,s).*BM2(4))./(T(57,s)+BM2(4))-T(61,s).*BM2(4));
+    27/23.7*(T(6,s)+(T(14,s).*(BM2(13).^T(17,s)))./((T(27,s).^T(17,s)).*(1+(BM2(11)./T(36,s)).^T(20,s)+(BM2(12)./T(42,s)).^T(21,s))+(BM2(13).^T(17,s)))-(T(50,s).*BM2(5))./(T(58,s)+BM2(5))-T(61,s).*BM2(5));
+    27/23.7*(T(4,s)+(T(12,s).*(BM2(13).^naB))./((T(29,s).^T(17,s)).*(1+(BM2(11)./T(34,s)).^T(20,s)+(BM2(12)./T(40,s)).^T(21,s))+BM2(13).^T(17,s))+(T(15,s).*(BM2(14).^T(18,s)))./((T(30,s).^T(18,s)).*(1+(BM2(12)./T(40,s)).^T(21,s))+BM2(14).^T(18,s))-(T(48,s).*BM2(6))./(T(56,s)+BM2(6))-T(61,s).*BM2(6));
+    27/23.7*(T(7,s)+(T(16,s).*(BM2(17).^T(19,s)))./((T(28,s).^T(19,s)).*(1+(BM2(15)./T(43,s)+BM2(16)./T(44,s)).^T(22,s))+BM2(17).^T(19,s))-(T(51,s).*BM2(7))./(T(59,s)+BM2(7))-T(61,s).*BM2(7));
+    27/23.7*(T(8,s)-(T(52,s).*BM2(8))./(T(60,s)+BM2(8))-T(61,s).*BM2(8));
+    27/23.7*(T(62,s).*BM2(1)+T(71,s).*BM2(11)-T(70,s).*BM2(9).*BM2(10)-(T(72,s).*BM2(9))./(T(80,s)+BM2(9))-T(61,s).*BM2(9));
+    27/23.7*(T(63,s).*BM2(2)+T(71,s).*BM2(11)-T(70,s).*BM2(9).*BM2(10)-(T(73,s).*BM2(10))./(T(81,s)+BM2(10))-T(61,s).*BM2(10));
+    27/23.7*(T(70,s).*BM2(9).*BM2(10)-T(71,s).*BM2(11)-(T(88,s).*BM2(11))./(T(89,s)+BM2(11))-T(61,s).*BM2(11));
+    27/23.7*(T(64,s).*BM2(3)-(T(74,s).*BM2(12))./(T(82,s)+BM2(12))-T(61,s).*BM2(12));
+    27/23.7*(T(65,s).*BM2(7)-(T(75,s).*BM2(13))./(T(83,s)+BM2(13))-T(61,s).*BM2(13));
+    27/23.7*(T(66,s).*BM2(8)-(T(76,s).*BM2(14))./(T(84,s)+BM2(14))-T(61,s).*BM2(14)); 
+    27/23.7*(T(67,s).*BM2(6)-(T(77,s).*BM2(15))./(T(85,s)+BM2(15))-T(61,s).*BM2(15));
+    27/23.7*(T(68,s).*BM2(4)-(T(78,s).*BM2(16))./(T(86,s)+BM2(16))-T(61,s).*BM2(16));
+    27/23.7*(T(69,s).*BM2(5)-(T(79,s).*BM2(17))./(T(87,s)+BM2(17))-T(61,s).*BM2(17))];
+
+%构造成本函数y，找到使得成本函数最小的参数值
+m1=max(BM2(:,9));%代表PER蛋白水平最大值
+m2=max(BM2(:,10));%代表CRY蛋白水平最大值
+m3=max(BM2(:,13));%代表BMAL1蛋白水平最大值
+m4=min(BM2(:,13));%代表BMAL1蛋白水平最小值
+
+y1=0.5*abs(m1/m2-0.05);%代表PER蛋白水平最大值和CRY蛋白水平最大值之比的相关成本函数，最小值为0.05
+y2=0.5*abs(m1/m2);%代表PER蛋白水平最大值和CRY蛋白水平最大值之比的相关成本函数，最小值为0
+y3=0.5*abs(m3/m2-0.15);%代表BMAL1蛋白水平最大值和CRY蛋白水平最大值之比的相关成本函数，最小值为0.15
+y4=0.5*abs(m4/m2-0.05);%代表BMAL1蛋白水平最小值和CRY蛋白水平最大值之比的相关成本函数，最小值为0.05
+y=y1+y2+y3+y4;
+disp(y)
+end
+end
