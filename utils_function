@@ -1,0 +1,319 @@
+import numpy as np
+import math
+from scipy.integrate import odeint
+
+
+# 17 个方程
+# 89 个参数
+def df_ode(Point, t, sets):
+    """
+    point: present location index
+    sets: super parameters
+    """
+    v0Per, v0Cry, v0Chrono, v0Rev1, v0Rev2, v0Ror, v0B, v0Jf, \
+    vsPer, vsCry, vsChrono, vs1Rev1, vsRev2, vsRor, \
+    vs2Rev1, vsB, naB, naJF, naRo, niPC, niCh, niRe, \
+    KAPer, KACry, KAChrono, KARev2, KARor, KAB, KA1Rev1, KA2Rev1, \
+    R1Per, R1Cry, R1Chrono, R1Rev1, R1Rev2, R1Ror, \
+    R2Per, R2Cry, R2Chrono, R2Rev1, R2Rev2, R2Ror, \
+    RB1, RB2, vdPer, vdCry, vdChrono, vdRev1, vdRev2, vdRor, vdB, vdJf, \
+    KdPer, KdCry, KdChrono, KdRev1, KdRev2, KdRor, KdB, KdJf, kdn, \
+    ksPER, ksCRY, ksCHRONO, ksBMAL1, ksJF, ksREV1, ksREV2, ksROR, \
+    kaPC, kdPC, vdPER, vdCRY, vdCHRONO, vdBMAL1, vdJF, vdREV1, vdREV2, vdROR, \
+    KdPER, KdCRY, KdCHRONO, KdBMAL1, KdJF, KdREV1, KdREV2, KdROR, vdPC, KdPC = sets
+    MPer, MCry, MChrono, MRev2, MRor, MRev1, MB, MJF, PER, CRY, PC, \
+    CHRONO, BMAL1, JF, REV1, REV2, ROR = Point
+    return np.array([v0Per + (vsPer * BMAL1**naB)/(KAPer**naB*(1+(PC/R1Per)**niPC+(CHRONO/R2Per)**niCh)+BMAL1**naB)-((vdPer*MPer)/(KdPer+MPer))-kdn*MPer,  # MPer
+                     v0Cry + (vsCry * BMAL1**naB)/(KACry**naB*(1+(PC/R1Cry)**niPC+(CHRONO/R2Cry)**niCh)+BMAL1**naB)-((vdCry*MCry)/(KdCry+MCry))-kdn*MCry, # MCry
+                     v0Chrono + (vsChrono * BMAL1**naB)/(KAChrono**naB*(1+(PC/R1Chrono)**niPC+(CHRONO/R2Chrono)**niCh)+BMAL1**naB)-((vdChrono*MChrono)/(KdChrono+MChrono))-kdn*MChrono,  # MChrono
+                     v0Rev2 + (vsRev2 * BMAL1**naB)/(KARev2**naB*(1+(PC/R1Rev2)**niPC+(CHRONO/R2Rev2)**niCh)+BMAL1**naB)-((vdRev2*MRev2)/(KdRev2+MRev2))-kdn*MRev2,  # MRev2
+                     v0Ror + (vsRor * BMAL1**naB)/(KARor**naB*(1+(PC/R1Ror)**niPC+(CHRONO/R2Ror)**niCh)+BMAL1**naB)-((vdRor*MRor)/(KdRor+MRor))-kdn*MRor,  # MRor
+                     v0Rev1+((vs1Rev1*BMAL1**naB)/(KA1Rev1**naB*(1+(PC/R1Rev1)**niPC+(CHRONO/R2Rev1)**niCh)+BMAL1**naB))+((vs2Rev1*JF**naJF)/(KA2Rev1**naJF*(1+(CHRONO/R2Rev1)**niCh)+JF**naJF))-((vdRev1*MRev1)/(KdRev1+MRev1))-(kdn*MRev1),   # MRev1
+                    v0B+((vsB*ROR**naRo)/(KAB**naRo*(1+(REV1/RB1+REV2/RB2)**niRe)+ROR**naRo))-((vdB*MB)/(KdB+MB))-(kdn*MB),  # MB
+                    v0Jf-((vdJf*MJF)/(KdJf+MJF))-(kdn*MJF),  # MJF
+                    (ksPER*MPer+kdPC*PC-kaPC*PER*CRY)-((vdPER*PER)/(KdPER+PER))-(kdn*PER),  # PER
+                    (ksCRY*MCry+kdPC*PC-kaPC*PER*CRY)-((vdCRY*CRY)/(KdCRY+CRY))-(kdn*CRY),  # CRY
+                    (kaPC*PER*CRY-kdPC*PC)-((vdPC*PC)/(KdPC+PC))-(kdn*PC),  # PC
+                    (ksCHRONO*MChrono)-((vdCHRONO*CHRONO)/(KdCHRONO+CHRONO))-(kdn*CHRONO),  # CHRONO
+                    (ksBMAL1*MB)-((vdBMAL1*BMAL1)/(KdBMAL1+BMAL1))-(kdn*BMAL1),  # BMAL1
+                    (ksJF*MJF)-((vdJF*JF)/(KdJF+JF))-(kdn*JF),  # JF
+                    (ksREV1*MRev1)-((vdREV1*REV1)/(KdREV1+REV1))-(kdn*REV1),  # REV1
+                    (ksREV2*MRev2)-((vdREV2*REV2)/(KdREV2+REV2))-(kdn*REV2),  # REV2,
+                    (ksROR*MRor)-((vdROR*ROR)/(KdROR+ROR))-(kdn*ROR)  # ROR
+                    ])
+
+
+
+
+# 峰值点索引函数
+def find_peaks_index(x):
+    temp = np.array(x)
+    x1 = temp[1:]
+    x2 = temp[0:-1]
+    # 前向差分
+    diff_forward = list(x1 - x2)
+    # 后向差分
+    diff_backward = list(x2 - x1)
+
+    diff_forward = [diff_backward[0]] + diff_forward
+    diff_backward = diff_backward + [diff_forward[-1]]
+    # 索引列表
+    index = list()
+    for i in range(len(diff_forward)):
+        if ((diff_forward[i] > 0) & (diff_backward[i] > 0)):
+            index.append(i)
+
+    length = len(index)
+    eps = 0.00001
+            
+    if (length < 3):
+        #print('该序列无峰值')
+        return None
+    elif (length == 3) and (x[index[0]] < x[index[1]]):
+        #print('该序列无峰值')
+        return None
+    elif x[index[0]] < x[index[1]]:  # 起始边界点如果不是峰值，去掉
+        index = index[1:]
+    
+    return index
+
+
+# 相位差
+def diff_phase(t, peaks_index_x, peaks_index_y):
+    delta_t = 0
+    if peaks_index_x[0] < peaks_index_y[0]:
+        delta_t = min(t[peaks_index_y[0]] - t[peaks_index_x[0]],
+                      t[peaks_index_x[1]] - t[peaks_index_y[0]])
+    else:
+        delta_t = min(t[peaks_index_x[0]] - t[peaks_index_y[0]],
+                      t[peaks_index_y[1]] - t[peaks_index_x[0]])
+    return delta_t
+
+
+
+# 成本函数，求最小值
+def cost(time_t, Per, Cry, BMAL1, REV1, REV2):    
+    # 100-end 时间内的数据
+    Per_max = np.max(Per)
+    Cry_max = np.max(Cry)
+    BMAL1_max = np.max(BMAL1)
+    BMAL1_min = np.min(BMAL1)
+
+    # 峰值索引
+    Per_peaks_index = find_peaks_index(Per)
+    Cry_peaks_index = find_peaks_index(Cry)
+    BMAL1_peaks_index = find_peaks_index(BMAL1)
+    REV1_peaks_index = find_peaks_index(REV1)
+    # print('peaks_index')
+    # print(Per_peaks_index, Cry_peaks_index, BMAL1_peaks_index, REV1_peaks_index)
+    
+    # 相位差
+    delta_t1 = diff_phase(time_t, Per_peaks_index, REV1_peaks_index)
+    delta_t2 = diff_phase(time_t, Cry_peaks_index, REV1_peaks_index)
+    delta_t3 = diff_phase(time_t, BMAL1_peaks_index, REV1_peaks_index)
+    
+    # 震荡周期
+    delta_P = 0.0
+    if len(Per_peaks_index) > 2:
+        delta_P = max(time_t[Per_peaks_index[1]] - time_t[Per_peaks_index[0]],
+                      time_t[Per_peaks_index[2]] - time_t[Per_peaks_index[1]])
+    else:
+        print('周期太短，震荡周期无法确定！')
+        print(Per_peaks_index)
+        raise
+    # print('delta_P = {:.2f}'.format(delta_P))
+    
+    y1 = 0.5 * np.abs(Per_max / Cry_max - 0.05)  # 代表PER蛋白水平最大值和CRY蛋白水平最大值之比的相关成本函数，最小值为0.05
+    y2 = 0.5 * np.abs(Per_max / Cry_max)  # 代表PER蛋白水平最大值和CRY蛋白水平最大值之比的相关成本函数，最小值为0
+    y3 = 0.5 * np.abs(BMAL1_max / Cry_max - 0.15)  # 代表BMAL1蛋白水平最大值和CRY蛋白水平最大值之比的相关成本函数，最小值为0.15
+    y4 = 0.5 * np.abs(BMAL1_min / Cry_max - 0.05)  # 代表BMAL1蛋白水平最小值和CRY蛋白水平最大值之比的相关成本函数，最小值为0.05
+    y5 = 10.0 * np.abs(delta_t1 / delta_P - 1.0 / 6.0) # 代表REV-ERB1 mRNA与PER mRNA之间的相位差相关成本函数，最小值为1/6
+    y6 = 10.0 * np.abs(delta_t2 / delta_P - 1.0 / 3.0)  # 代表REV-ERB1 mRNA与CRY mRNA之间的相位差相关成本函数，最小值为1/3
+    y7 = 10.0 * np.abs(delta_t3 / delta_P - 2.0 / 3.0)  # 代表REV-ERB1 mRNA与BMAL1 mRNA之间的相位差相关成本函数，最小值为2/3
+    
+    return y1+y2+y3+y4+y5+y6+y7
+
+
+# 2023-8-24
+# 修正成本函数
+# 成本函数，求最小值
+def cost2(time_t, Per, Cry, BMAL1, REV1, REV2, MPer, MCry, MRev1, MB):    
+    # 100-end 时间内的数据
+    MPer_max = np.max(MPer)
+    MPer_min = np.min(MPer)
+    MCry_max = np.max(MCry)
+    MCry_min = np.min(MCry)
+    MRev1_max = np.max(MRev1)
+    MRev1_min = np.min(MRev1)
+    MB_max = np.max(MB)
+    MB_min = np.min(MB)
+    Per_max = np.max(Per)
+    Cry_max = np.max(Cry)
+    BMAL1_max = np.max(BMAL1)
+    BMAL1_min = np.min(BMAL1)
+
+    # 峰值索引
+    MPer_peaks_index = find_peaks_index(MPer)
+    MCry_peaks_index = find_peaks_index(MCry)
+    MRev1_peaks_index = find_peaks_index(MRev1)
+    MB_peaks_index = find_peaks_index(MB)
+    Per_peaks_index = find_peaks_index(Per)
+    Cry_peaks_index = find_peaks_index(Cry)
+    BMAL1_peaks_index = find_peaks_index(BMAL1)
+    REV1_peaks_index = find_peaks_index(REV1)
+    # print('peaks_index')
+    # print(Per_peaks_index, Cry_peaks_index, BMAL1_peaks_index, REV1_peaks_index)
+    
+    # 相位差
+    delta_t1 = diff_phase(time_t, MPer_peaks_index, MCry_peaks_index)  # MPer 与 MCry
+    delta_t2 = diff_phase(time_t, MPer_peaks_index, MB_peaks_index)  # MPer 与 MB
+    delta_t3 = diff_phase(time_t, MRev1_peaks_index, MB_peaks_index)  # MRev1 与 MB
+    delta_t4 = diff_phase(time_t, MPer_peaks_index, Per_peaks_index)  # MPer 与 Per
+    delta_t5 = diff_phase(time_t, MCry_peaks_index, Cry_peaks_index)  # MCry 与 Cry
+    delta_t6 = diff_phase(time_t, BMAL1_peaks_index, MB_peaks_index)  # BMAL1 与 MB
+    delta_t7 = diff_phase(time_t, REV1_peaks_index, MRev1_peaks_index)  # REV1 与 MRev1
+    
+    # 震荡周期
+    delta_P = 0.0
+    if len(Per_peaks_index) > 2:
+        delta_P = max(time_t[Per_peaks_index[1]] - time_t[Per_peaks_index[0]],
+                      time_t[Per_peaks_index[2]] - time_t[Per_peaks_index[1]])
+    else:
+        print('周期太短，震荡周期无法确定！')
+        print(Per_peaks_index)
+        raise
+    # print('delta_P = {:.2f}'.format(delta_P))
+    
+    y1 = 10.0 * np.abs(delta_t1 / delta_P)  # 代表Cry mRNA与Per mRNA之间的相位差相关成本函数，最小值为0
+    y2 = 10.0 * np.abs(delta_t2 / delta_P - 0.5)  # 代表Bmal1 mRNA与Per mRNA之间的相位差相关成本函数，最小值为1/2
+    y3 = 10.0 * np.abs((delta_P - delta_t3)/delta_P - 2.0/3.0)  # 代表Bmal1 mRNA与Rev-erb1 mRNA之间的相位差相关成本函数,最小值为2/3
+    y4 = 5.0 * np.abs(delta_t4/delta_P - 5.0/24.0)  # 代表PER蛋白与Per mRNA之间的相位差相关成本函数，最小值为5/24
+    y5 = 5.0 * np.abs(delta_t5/delta_P - 5.0/24.0) # 代表CRY蛋白与Cry mRNA之间的相位差相关成本函数，最小值为5/24
+    y6 = 5.0 * np.abs(delta_t6/delta_P - 5.0/24.0)  # 代表BMAL1蛋白与Bmal1 mRNA之间的相位差相关成本函数，最小值为5/24
+    y7 = 5.0 * np.abs(delta_t7/delta_P - 1.5/24.0)  # 代表REV-ERB1蛋白与Rev-erb1 mRNA之间的相位差相关成本函数，最小值为1.5/24
+    y8 = 0.5 * np.abs(MPer_min/MPer_max - 0.2)  # 微分方程组的第1个变量的最小值比上微分方程组的第1个变量的最大值的相关成本函数，最小值为0.2
+    y9 = 0.5 * np.abs(MCry_min/MCry_max - 0.5)  # 微分方程组的第2个变量的最小值比上微分方程组的第2个变量的最大值的相关成本函数，最小值为0.5
+    y10 = 0.5 * np.abs(MB_min/MB_max - 0.1)  # 微分方程组的第7个变量的最小值比上微分方程组的第7个变量的最大值的相关成本函数，最小值为0.1
+    y11 = 0.5 * np.abs(MRev1_min/MRev1_max - 0.2)  # 微分方程组的第6个变量的最小值比上微分方程组的第6个变量的最大值的相关成本函数，最小值为0.2
+    
+    return y1+y2+y3+y4+y5+y6+y7+y8+y9+y10+y11
+
+
+# 成本函数，求最小值
+def print_cost(time_t, Per, Cry, BMAL1, REV1, REV2):    
+    # 100-end 时间内的数据
+    Per_max = np.max(Per)
+    Cry_max = np.max(Cry)
+    BMAL1_max = np.max(BMAL1)
+    BMAL1_min = np.min(BMAL1)
+
+    # 峰值索引
+    Per_peaks_index = find_peaks_index(Per)
+    Cry_peaks_index = find_peaks_index(Cry)
+    BMAL1_peaks_index = find_peaks_index(BMAL1)
+    REV1_peaks_index = find_peaks_index(REV1)
+    # print('peaks_index')
+    # print(Per_peaks_index, Cry_peaks_index, BMAL1_peaks_index, REV1_peaks_index)
+    
+    # 相位差
+    delta_t1 = diff_phase(time_t, Per_peaks_index, REV1_peaks_index)
+    delta_t2 = diff_phase(time_t, Cry_peaks_index, REV1_peaks_index)
+    delta_t3 = diff_phase(time_t, BMAL1_peaks_index, REV1_peaks_index)
+    
+    # 震荡周期
+    delta_P = 0.0
+    if len(Per_peaks_index) > 2:
+        delta_P = max(time_t[Per_peaks_index[1]] - time_t[Per_peaks_index[0]],
+                      time_t[Per_peaks_index[2]] - time_t[Per_peaks_index[1]])
+    else:
+        print('周期太短，震荡周期无法确定！')
+        print(Per_peaks_index)
+        raise
+    # print('delta_P = {:.2f}'.format(delta_P))
+    
+    y1 = 0.5 * np.abs(Per_max / Cry_max - 0.05)  # 代表PER蛋白水平最大值和CRY蛋白水平最大值之比的相关成本函数，最小值为0.05
+    y2 = 0.5 * np.abs(Per_max / Cry_max)  # 代表PER蛋白水平最大值和CRY蛋白水平最大值之比的相关成本函数，最小值为0
+    y3 = 0.5 * np.abs(BMAL1_max / Cry_max - 0.15)  # 代表BMAL1蛋白水平最大值和CRY蛋白水平最大值之比的相关成本函数，最小值为0.15
+    y4 = 0.5 * np.abs(BMAL1_min / Cry_max - 0.05)  # 代表BMAL1蛋白水平最小值和CRY蛋白水平最大值之比的相关成本函数，最小值为0.05
+    y5 = 10.0 * np.abs(delta_t1 / delta_P - 1.0 / 6.0) # 代表REV-ERB1 mRNA与PER mRNA之间的相位差相关成本函数，最小值为1/6
+    y6 = 10.0 * np.abs(delta_t2 / delta_P - 1.0 / 3.0)  # 代表REV-ERB1 mRNA与CRY mRNA之间的相位差相关成本函数，最小值为1/3
+    y7 = 10.0 * np.abs(delta_t3 / delta_P - 2.0 / 3.0)  # 代表REV-ERB1 mRNA与BMAL1 mRNA之间的相位差相关成本函数，最小值为2/3
+    
+    y = y1+y2+y3+y4+y5+y6+y7
+    
+    print('t1 = {:.2f}, t2 = {:.2f}, t3 = {:.2f}, P = {:.2f}'.format(delta_t1, delta_t2, delta_t3, delta_P))
+    
+    print('y1 = {:.2f}, y2 = {:.2f}, y3 = {:.2f}, y4 = {:.2f}, y5 = {:.2f}, y6 = {:.2f}, y7 = {:.2f}'.format(y1, y2, y3, y4, y5, y6, y7))
+    
+    print('cost = {:.4f}'.format(y))
+    
+
+# 2023-8-24
+# 打印修正成本函数
+# 成本函数，求最小值
+def print_cost2(time_t, Per, Cry, BMAL1, REV1, REV2, MPer, MCry, MRev1, MB):    
+    # 100-end 时间内的数据
+    MPer_max = np.max(MPer)
+    MPer_min = np.min(MPer)
+    MCry_max = np.max(MCry)
+    MCry_min = np.min(MCry)
+    MRev1_max = np.max(MRev1)
+    MRev1_min = np.min(MRev1)
+    MB_max = np.max(MB)
+    MB_min = np.min(MB)
+    Per_max = np.max(Per)
+    Cry_max = np.max(Cry)
+    BMAL1_max = np.max(BMAL1)
+    BMAL1_min = np.min(BMAL1)
+
+    # 峰值索引
+    MPer_peaks_index = find_peaks_index(MPer)
+    MCry_peaks_index = find_peaks_index(MCry)
+    MRev1_peaks_index = find_peaks_index(MRev1)
+    MB_peaks_index = find_peaks_index(MB)
+    Per_peaks_index = find_peaks_index(Per)
+    Cry_peaks_index = find_peaks_index(Cry)
+    BMAL1_peaks_index = find_peaks_index(BMAL1)
+    REV1_peaks_index = find_peaks_index(REV1)
+    # print('peaks_index')
+    # print(Per_peaks_index, Cry_peaks_index, BMAL1_peaks_index, REV1_peaks_index)
+    
+    # 相位差
+    delta_t1 = diff_phase(time_t, MPer_peaks_index, MCry_peaks_index)  # MPer 与 MCry
+    delta_t2 = diff_phase(time_t, MPer_peaks_index, MB_peaks_index)  # MPer 与 MB
+    delta_t3 = diff_phase(time_t, MRev1_peaks_index, MB_peaks_index)  # MRev1 与 MB
+    delta_t4 = diff_phase(time_t, MPer_peaks_index, Per_peaks_index)  # MPer 与 Per
+    delta_t5 = diff_phase(time_t, MCry_peaks_index, Cry_peaks_index)  # MCry 与 Cry
+    delta_t6 = diff_phase(time_t, BMAL1_peaks_index, MB_peaks_index)  # BMAL1 与 MB
+    delta_t7 = diff_phase(time_t, REV1_peaks_index, MRev1_peaks_index)  # REV1 与 MRev1
+    
+    # 震荡周期
+    delta_P = 0.0
+    if len(Per_peaks_index) > 2:
+        delta_P = max(time_t[Per_peaks_index[1]] - time_t[Per_peaks_index[0]],
+                      time_t[Per_peaks_index[2]] - time_t[Per_peaks_index[1]])
+    else:
+        print('周期太短，震荡周期无法确定！')
+        print(Per_peaks_index)
+        raise
+    # print('delta_P = {:.2f}'.format(delta_P))
+    
+    y1 = 10.0 * np.abs(delta_t1 / delta_P)  # 代表Cry mRNA与Per mRNA之间的相位差相关成本函数，最小值为0
+    y2 = 10.0 * np.abs(delta_t2 / delta_P - 0.5)  # 代表Bmal1 mRNA与Per mRNA之间的相位差相关成本函数，最小值为1/2
+    y3 = 10.0 * np.abs((delta_P - delta_t3)/delta_P - 2.0/3.0)  # 代表Bmal1 mRNA与Rev-erb1 mRNA之间的相位差相关成本函数,最小值为2/3
+    y4 = 5.0 * np.abs(delta_t4/delta_P - 5.0/24.0)  # 代表PER蛋白与Per mRNA之间的相位差相关成本函数，最小值为5/24
+    y5 = 5.0 * np.abs(delta_t5/delta_P - 5.0/24.0) # 代表CRY蛋白与Cry mRNA之间的相位差相关成本函数，最小值为5/24
+    y6 = 5.0 * np.abs(delta_t6/delta_P - 5.0/24.0)  # 代表BMAL1蛋白与Bmal1 mRNA之间的相位差相关成本函数，最小值为5/24
+    y7 = 5.0 * np.abs(delta_t7/delta_P - 1.5/24.0)  # 代表REV-ERB1蛋白与Rev-erb1 mRNA之间的相位差相关成本函数，最小值为1.5/24
+    y8 = 0.5 * np.abs(MPer_min/MPer_max - 0.2)  # 微分方程组的第1个变量的最小值比上微分方程组的第1个变量的最大值的相关成本函数，最小值为0.2
+    y9 = 0.5 * np.abs(MCry_min/MCry_max - 0.5)  # 微分方程组的第2个变量的最小值比上微分方程组的第2个变量的最大值的相关成本函数，最小值为0.5
+    y10 = 0.5 * np.abs(MB_min/MB_max - 0.1)  # 微分方程组的第7个变量的最小值比上微分方程组的第7个变量的最大值的相关成本函数，最小值为0.1
+    y11 = 0.5 * np.abs(MRev1_min/MRev1_max - 0.2)  # 微分方程组的第6个变量的最小值比上微分方程组的第6个变量的最大值的相关成本函数，最小值为0.2
+    
+    y = y1+y2+y3+y4+y5+y6+y7+y8+y9+y10+y11
+    
+    print('t1 = {:.2f}, t2 = {:.2f}, t3 = {:.2f}, t4 = {:.2f}, t5 = {:.2f}, t6 = {:.2f}, t7 = {:.2f}, P = {:.2f}'.format(delta_t1, delta_t2, delta_t3, delta_t4, delta_t5, delta_t6, delta_t7, delta_P))
+    
+    print('y1 = {:.2f}, y2 = {:.2f}, y3 = {:.2f}, y4 = {:.2f}, y5 = {:.2f}, y6 = {:.2f}, y7 = {:.2f}, y8 = {:.2f}, y9 = {:.2f}, y10 = {:.2f}, y11 = {:.2f}'.format(y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11))
+    
+    print('cost = {:.4f}'.format(y))
